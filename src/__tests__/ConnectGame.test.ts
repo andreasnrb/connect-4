@@ -1,15 +1,26 @@
 // noinspection DuplicatedCode
 
-import {Board} from '../Logic/Board';
-import exp from "constants";
+import {ConnectGame} from '../Logic/ConnectGame';
+
+beforeEach(() => {
+    // to fully reset the state between tests, clear the storage
+    localStorage.clear();
+    // and reset all mocks
+    jest.clearAllMocks();
+
+    // clearAllMocks will impact your other mocks too, so you can optionally reset individual mocks instead:
+    // @ts-ignore
+    // localStorage.setItem.mockClear();
+});
+
 it( 'should create a board x/y size', () => {
-    let board = new Board( 5, 5, 4);
+    let board = new ConnectGame( {rows:5, columns:5, connect: 4});
     expect(board.getColumns()).toBe(5)
     expect(board.getRows()).toBe(5)
 })
 
 it( 'should place brick a column in 1 by 1', () => {
-    let board = new Board( 1, 1, 1);
+    let board = new ConnectGame( {rows: 1, columns: 1, connect: 1 });
     let token:number = 1;
     expect(board.placeToken( 0, token) ).toBeFalsy();
     expect(board.placeToken( 2, token) ).toBeFalsy();
@@ -18,7 +29,7 @@ it( 'should place brick a column in 1 by 1', () => {
 })
 
 it( 'should place brick a column in 2 by 2', () => {
-    let board = new Board( 2, 2, 2);
+    let board = new ConnectGame( {rows:2, columns:2, connect: 2});
     let token:number = 1;
     expect(board.placeToken( 0, token) ).toBeFalsy();
     expect(board.placeToken( 1, token) ).toBeTruthy();
@@ -31,13 +42,13 @@ it( 'should place brick a column in 2 by 2', () => {
 })
 
 it( 'should check if player has won vertical on column 0', () => {
-    let board = new Board( 3, 3, 2);
+    let board = new ConnectGame( {rows:3, columns:3, connect: 2});
     let player1:number = 1;
     let player2:number = 2;
 
     expect(board.getColumns()).toBe(3);
     expect(board.getRows()).toBe(3);
-    expect(board.connect).toBe(2);
+    expect(board.getConnect()).toBe(2);
     expect(board.placeToken( 1, player1)).toBeTruthy();
     expect(board.checkIfConnect()).toBeFalsy();
     expect(board.placeToken( 2, player2)).toBeTruthy();
@@ -46,7 +57,7 @@ it( 'should check if player has won vertical on column 0', () => {
     expect(board.checkIfConnect()).toBeTruthy();
 })
 it( 'should check if player has won vertical on column 1', () => {
-    let board = new Board( 3, 3, 3);
+    let board = new ConnectGame( {rows:3, columns:3, connect: 3});
     let player1:number = 1;
     let player2:number = 2;
     expect(board.placeToken( 2, player1)).toBeTruthy();
@@ -62,12 +73,12 @@ it( 'should check if player has won vertical on column 1', () => {
 })
 
 it( 'should check if player has won horizontal on row 0', () => {
-    let board = new Board( 3, 3, 2);
+    let board = new ConnectGame( {rows:3, columns:3, connect: 2});
     let player1:number = 1;
     let player2:number = 2;
     expect(board.getColumns()).toBe(3);
     expect(board.getRows()).toBe(3);
-    expect(board.connect).toBe(2);
+    expect(board.getConnect()).toBe(2);
     expect(board.placeToken( 3, player1)).toBeTruthy();
     expect(board.checkIfConnect()).toBeFalsy();
     expect(board.placeToken( 1, player2)).toBeTruthy();
@@ -77,7 +88,7 @@ it( 'should check if player has won horizontal on row 0', () => {
 })
 
 it( 'should check if player has won horizontal on row 1', () => {
-    let board = new Board( 3, 3, 3);
+    let board = new ConnectGame( {rows:3, columns:3, connect: 3});
     let player1:number = 1;
     let player2:number = 2;
     expect(board.placeToken( 1, player1)).toBeTruthy();
@@ -98,7 +109,7 @@ it( 'should check if player has won horizontal on row 1', () => {
     expect(board.checkIfConnect()).toBeTruthy();
 })
 it( 'should check if player has won diagonal up on 00 01', () => {
-    let board = new Board( 2, 2, 2);
+    let board = new ConnectGame( {rows:2, columns:2, connect: 2});
     let player1:number = 1;
     let player2:number = 2;
     expect(board.placeToken( 1, player1)).toBeTruthy();
@@ -110,10 +121,10 @@ it( 'should check if player has won diagonal up on 00 01', () => {
 })
 
 it( 'should check if player has won diagonal up on 01 11', () => {
-    let board = new Board( 3, 4, 3);
+    let board = new ConnectGame( {rows:3, columns:4, connect: 3});
     expect(board.getColumns()).toBe(4);
     expect(board.getRows()).toBe(3);
-    expect(board.connect).toBe(3);
+    expect(board.getConnect()).toBe(3);
     let player1:number = 1;
     let player2:number = 2;
     expect(board.placeToken( 3, player1)).toBeTruthy();
@@ -132,7 +143,7 @@ it( 'should check if player has won diagonal up on 01 11', () => {
 })
 
 it( 'should check if player has won diagonal down on 03 30', () => {
-    let board = new Board( 4, 4, 3);
+    let board = new ConnectGame( {rows:4, columns:4, connect: 3});
     let player1:number = 1;
     let player2:number = 2;
     expect(board.placeToken( 1, player1)).toBeTruthy();
@@ -152,4 +163,26 @@ it( 'should check if player has won diagonal down on 03 30', () => {
     } else {
         expect(result).toBeTruthy();
     }
+})/**/
+
+it( 'should regret latest move', () => {
+    let board = new ConnectGame( {rows:4, columns:4, connect: 3});
+    let player1:number = 1;
+    let player2:number = 2;
+    expect(board.placeToken( 1, player1)).toBeTruthy();
+    expect(board.regretLatestMove()).toStrictEqual([1,1]);
+    expect(board.getHistory().length).toBe(0);
+    expect(board.placeToken( 1, player2)).toBeTruthy();
+    expect(board.getHistory().length).toBe(1);
+})
+
+/**/it( 'should use callback', () => {
+    let board = new ConnectGame( {rows:4, columns:4, connect: 3});
+    let player1:number = 1;
+    const placementFn = jest.fn(() => 'mock content');
+    expect(board.placeToken( 1, player1, placementFn)).toBeTruthy();
+    expect(placementFn).toHaveBeenLastCalledWith([1,1], board.getPlacements());
+    const regretFn = jest.fn(() => 'mock content');
+    expect(board.regretLatestMove( regretFn )).toStrictEqual([1,1]);
+    expect(regretFn).toHaveBeenLastCalledWith([1,1], board.getHistory(), board.getPlacements());
 })/**/

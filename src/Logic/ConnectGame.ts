@@ -1,44 +1,50 @@
 
-class Board {
-    rows:number;
-    columns:number;
-    connect:number;
-    board: any;
+class ConnectGame {
+    board: Board;
+    placements: any;
     free: Array<number>;
     history: Array<any> = [];
-    constructor( rows: number, columns: number, connect: number ) {
-        if ( ! Number.isInteger( columns ) ) throw new Error( 'Columns have to be an integer.')
-        if ( ! Number.isInteger( rows ) ) throw new Error( 'Rows have to be an integer.')
-        if ( ! Number.isInteger( connect ) ) throw new Error( 'Connect have to be an integer.')
-        if ( connect > rows || connect > columns ) throw new Error( 'Connect has to be smaller than rows and columns-')
-
-        this.rows = rows;
-        this.columns = columns;
-        this.connect = connect;
-        this.free = Array.apply(null, Array(this.columns )).map( () => 0 )
-        this.board = Array.apply(null, Array(this.columns)).map(() => {
-            return Array(this.rows).map(() => 0);
+    constructor( board:Board ) {
+        if ( ! Number.isInteger( board.columns ) ) throw new Error( 'Columns have to be an integer.')
+        if ( ! Number.isInteger( board.rows ) ) throw new Error( 'Rows have to be an integer.')
+        if ( ! Number.isInteger( board.connect ) ) throw new Error( 'Connect have to be an integer.')
+        if ( board.connect > board.rows || board.connect > board.columns ) throw new Error( 'Connect has to be smaller than rows and columns-')
+        this.board = board;
+        this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
+        this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
+            return Array(this.board.rows).map(() => 0);
         })
     }
 
     getColumns() {
-        return this.columns;
+        return this.board.columns;
     }
 
     getRows() {
-        return this.rows;
+        return this.board.rows;
+    }
+
+    getConnect() {
+        return this.board.connect;
     }
 
     getBoard() {
         return this.board;
     }
 
-    placeToken(column: number, token: number) {
+    getPlacements() {
+        return this.placements;
+    }
+
+    placeToken(column: number, token: number, callback?:Function ) {
         if ( ! Number.isInteger( column ) ) throw new Error( 'Column have to be an integer.')
-        if ( column < 1 || column > this.columns ) return false;
-        if ( this.free[column - 1 ] === this.rows ) return false;
-        this.board[ column - 1 ][ this.free[ column - 1 ] ] = token;
-        this.history.push({column, token});
+        if ( column < 1 || column > this.board.columns ) return false;
+        if ( this.free[column - 1 ] === this.board.rows ) return false;
+        this.placements[ column - 1 ][ this.free[ column - 1 ] ] = token;
+        if ( callback ) {
+            callback([column, token], this.placements);
+        }
+        this.history.push([column, token]);
         this.free[ column - 1 ]++;
         return true;
     }
@@ -62,9 +68,9 @@ class Board {
     getPlayerAt( column:number, row:number ) {
         if ( column < 0 ) return false;
         if ( row < 0 ) return false;
-        if ( column >= this.columns ) return false;
-        if ( row >= this.rows ) return false;
-        return this.board[column][row] ?? false;
+        if ( column >= this.board.columns ) return false;
+        if ( row >= this.board.rows ) return false;
+        return this.placements[column][row] ?? false;
     }
 
     public checkVerticalAndHorizontalWinner(cols:number[]) {
@@ -89,7 +95,7 @@ class Board {
                     start = {column:col, row:r};
                 } else {
                     lengthY++;
-                    if ( lengthY === this.connect ) {
+                    if ( lengthY === this.board.connect ) {
                         found = true;
                         winner = player;
                         end = {column:col, row:r};
@@ -101,7 +107,7 @@ class Board {
                     startX = {column:col-1, row:r};
                 } else {
                     lengthX[r]++;
-                    if ( lengthX[r] === this.connect ) {
+                    if ( lengthX[r] === this.board.connect ) {
                         found = true;
                         winner = player;
                         // @ts-ignore
@@ -122,8 +128,8 @@ class Board {
         let start:Coordinate;
         let end:Coordinate;
         let startY:Coordinate;
-        if ( cols.length<this.connect ) return false;
-        if ( Math.max(  ... cols ) < this.connect) return false;
+        if ( cols.length<this.board.connect ) return false;
+        if ( Math.max(  ... cols ) < this.board.connect) return false;
         for( let col=0; col<this.getColumns() && !found;col++) {
             for( let row=0;row<this.getRows() && !found;row++){
                 let player = 0;
@@ -145,7 +151,7 @@ class Board {
                             start = {column:x,row:y}
                         } else {
                             length++;
-                            if ( length === this.connect ) {
+                            if ( length === this.board.connect ) {
                                 found = true;
                                 winner = player;
                                 end = {column:x,row:y}
@@ -163,7 +169,7 @@ class Board {
                             startY = {column:x,row:this.getRows()-y-1}
                         } else {
                             lengthY++;
-                            if ( lengthY === this.connect ) {
+                            if ( lengthY === this.board.connect ) {
                                 found = true;
                                 winner = playerY;
                                 // @ts-ignore
@@ -180,6 +186,17 @@ class Board {
         return found ? {start:start, end:end,player: winner} : false;
     }
 
+    regretLatestMove( callback?:Function ) {
+        let latest = this.history.pop();
+        if ( callback ) {
+            callback(latest, this.history, this.placements );
+        }
+        return latest;
+    }
+
+    getHistory() {
+        return this.history;
+    }
 }
 
 interface Coordinate {
@@ -192,5 +209,11 @@ interface Result {
     player: number
 }
 
-export {Board};
-export type { Result };
+interface Board {
+    rows: number,
+    columns: number,
+    connect: number
+}
+
+export {ConnectGame};
+export type { Result, Board };
