@@ -6,6 +6,14 @@ import GameStorage from "../Logic/Storage";
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
+/**
+ * This is the main UI for the game. It handles the board and the players actions.
+ *
+ * TODO: Add support to display turn number.
+ *
+ * @param props
+ * @constructor
+ */
 function ConnectGameUI(props:BoardData) {
     const [winner, setWinner] = useState({winner:false, player:0});
     const [currentPlayer, setCurrentPlayer] = useState(1);
@@ -56,9 +64,9 @@ function ConnectGameUI(props:BoardData) {
         })
 
         return () => {
-            game?.unsubscribeFromEvent(GameEvent.Placement, 'uiGame')
-            game?.unsubscribeFromEvent(GameEvent.Won, 'uiGame')
-            game?.unsubscribeFromEvent(GameEvent.Reversal, 'uiGame')
+            game.unsubscribeFromEvent(GameEvent.Placement, 'uiGame')
+            game.unsubscribeFromEvent(GameEvent.Won, 'uiGame')
+            game.unsubscribeFromEvent(GameEvent.Reversal, 'uiGame')
         }
     },[game, gameStorage])
     return <>

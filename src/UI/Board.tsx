@@ -7,6 +7,13 @@ interface BoardData {
     handlePlacement:Function
 }
 
+/**
+ * Board renders the complete board and handles the current player display state.
+ * CSS class is set based on current player so that the UI adapts.
+ *
+ * @param boardData
+ * @constructor
+ */
 function Board( boardData:BoardData ) {
     const game = boardData.game;
     const [currentPlayer, setCurrentPlayer] = useState(game.getCurrentPlayer());

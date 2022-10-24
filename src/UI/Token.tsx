@@ -1,8 +1,18 @@
+/**
+ * The state of a token. Chosen to only support 2 players.
+ */
 enum TokenStates {
     Player1=1,
     Player2,
     Empty
 }
+
+/**
+ * Represents a token on the board.
+ *
+ * @param props
+ * @constructor
+ */
 function Token(props:any) {
     let tokenState;
     switch ( props.tokenState ) {

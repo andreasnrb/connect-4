@@ -2,6 +2,14 @@ import Token, {TokenStates} from "./Token";
 import {useEffect, useState} from "react";
 import {GameEvent} from "../Logic/ConnectGame";
 
+/**
+ * Column represents as the name suggest a column on the board.
+ * It handles its own state.
+ * It can easily support keyboard input. Currently only support mouse clicks.
+ *
+ * @param props
+ * @constructor
+ */
 function Column(props:any) {
     const game = props.game;
     const [tokenState,setTokenState] = useState<Array<number>>(props.tokens.filter((x:number) => x!==0) )

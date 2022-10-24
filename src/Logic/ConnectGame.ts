@@ -1,3 +1,6 @@
+/**
+ * List of events one can subscribe to.
+ */
 enum GameEvent {
     Placement,
     Reversal,
@@ -6,6 +9,13 @@ enum GameEvent {
     Reset
 }
 
+/**
+ * This is the actual game. The class setups the board and makes sure the provided data is correct.
+ * It is made to be optimal when it comes to handling the state of the game.
+ * No unnecessary loops and what not when checking for a winning state.
+ *
+ * TODO: Add support to check if no winning moves left.
+ */
 class ConnectGame {
     board: Board;
     placements: any;
@@ -14,6 +24,12 @@ class ConnectGame {
     subscriptions: Array<{[k:string]:Function}> = [];
     currentPlayer:number = 1;
     completed:boolean=false;
+
+    /**
+     * Setups the game.
+     *
+     * @param board
+     */
     constructor( board:Board ) {
         if ( ! Number.isInteger( board.columns ) ) throw new Error( 'Columns have to be an integer.')
         if ( ! Number.isInteger( board.rows ) ) throw new Error( 'Rows have to be an integer.')
@@ -30,54 +46,110 @@ class ConnectGame {
             return Array(this.board.rows).fill(0);
         })
     }
-    getCurrentPlayer() {
+
+    /**
+     * Return the current player.
+     *
+     * @return integer
+     */
+    getCurrentPlayer():number {
         return this.currentPlayer;
     }
 
-    getColumns() {
+    /**
+     * Return the number of columns of the board.
+     *
+     * @return integer
+     */
+    getColumns():number {
         return this.board.columns;
     }
 
-    getRows() {
+    /**
+     * Return the number of rows of the board.
+     *
+     * @return integer
+     */
+    getRows():number {
         return this.board.rows;
     }
 
-    getConnect() {
+    /**
+     * Return the number of connecting tokens that results in a winning state.
+     *
+     * @return integer
+     */
+    getConnect():number {
         return this.board.connect;
     }
 
-    getBoard() {
+    /**
+     * Returns the board setup.
+     *
+     * @return Board
+     */
+    getBoard():Board {
         return this.board;
     }
 
+    /**
+     * Returns the token placements on the board.
+     *
+     * @return [[]]
+     */
     getPlacements() {
         return this.placements;
     }
 
-    placeToken(column: number, token: number, callback?:Function ) {
+    /**
+     * Place a token on the board.
+     *
+     * @fires <GameEvent.Placement> Params [column, player], placements:[]
+     * @param column
+     * @param player Player number. Should be 1 or 2.
+     * @param callback
+     */
+    placeToken(column: number, player: number, callback?:Function ) {
         if ( this.completed ) return false;
-        if ( ! Number.isInteger( column ) ) throw new Error( 'Column have to be an integer.')
+        if ( ! Number.isInteger( column ) ) throw new Error( 'Column has to be an integer.')
         if ( column < 1 || column > this.board.columns ) return false;
         if ( this.free[column - 1 ] === this.board.rows ) return false;
-        this.placements[ column - 1 ][ this.free[ column - 1 ] ] = token;
-        this.history.push([column, token]);
+        this.placements[ column - 1 ][ this.free[ column - 1 ] ] = player;
+        this.history.push([column, player]);
         this.free[ column - 1 ]++;
         this.currentPlayer= this.currentPlayer===1?2:1;
-        Object.values(this.subscriptions[GameEvent.Placement]).map((subscribedCallback) => subscribedCallback([column, token], this.placements));
+        Object.values(this.subscriptions[GameEvent.Placement]).map((subscribedCallback) => subscribedCallback([column, player], this.placements));
         if ( callback ) {
-            callback([column, token], this.placements);
+            callback([column, player], this.placements);
         }
         return true;
     }
 
+    /**
+     * Subscribe to a game event.
+     *
+     * @param event
+     * @param key
+     * @param callback
+     */
     subscribeToEvent(event:GameEvent, key:string, callback:Function ) {
         this.subscriptions[event][key] = callback;
     }
 
+    /**
+     * Unsubscribe from a game event.
+     *
+     * @param event
+     * @param key
+     */
     unsubscribeFromEvent( event:GameEvent, key:string ) {
         delete this.subscriptions[event][key];
     }
 
+    /**
+     * Check if a winning state has been reached.
+     * @fires <GameEvent.Won> Param Result
+     */
     checkIfConnect() {
         let cols = [];
         for(let i=0;i<this.getColumns(); i++) {
@@ -97,6 +169,12 @@ class ConnectGame {
 
     }
 
+    /**
+     * Returns which player is at the coordinates.
+     *
+     * @param column
+     * @param row
+     */
     getPlayerAt( column:number, row:number ) {
         if ( column < 0 ) return false;
         if ( row < 0 ) return false;
@@ -105,7 +183,7 @@ class ConnectGame {
         return this.placements[column][row] ?? false;
     }
 
-    public checkVerticalAndHorizontalWinner(cols:number[]) {
+    checkVerticalAndHorizontalWinner(cols:number[]) {
         let start:Coordinate;
         let end:Coordinate;
         let startX:Coordinate;
@@ -218,6 +296,12 @@ class ConnectGame {
         return found ? {start:start, end:end,player: winner} : false;
     }
 
+    /**
+     * Reverses the latest move. Reset state to previous placement.
+     *
+     * @fires <GameEvent.Reversal> Params [column, player], history[], placements:[]
+     * @param callback
+     */
     regretLatestMove( callback?:Function ) {
         if( this.history.length === 0 ) return [];
         let [column, player] = this.history.pop();
@@ -231,10 +315,20 @@ class ConnectGame {
         return [column, player];
     }
 
+    /**
+     * Returns the game history. All moves in sequence.
+     *
+     * @return array<[number,number]>
+     */
     getHistory() {
         return this.history;
     }
 
+    /**
+     * Resets the game state.
+     *
+     * @fires <GameEvent.Reset> Params this
+     */
     reset() {
         this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
             return Array(this.board.rows).fill(0);
@@ -247,16 +341,27 @@ class ConnectGame {
     }
 }
 
+/**
+ * Coordinate on the board.
+ */
 interface Coordinate {
     row: number,
     column: number,
 }
+
+/**
+ * The winning connection. Added start and end coordinates so the UI could highlight winning row.
+ * Chose not to implement it.
+ */
 interface Result {
     start: Coordinate,
     end: Coordinate,
     player: number
 }
 
+/**
+ * The board requirements.
+ */
 interface Board {
     rows: number,
     columns: number,

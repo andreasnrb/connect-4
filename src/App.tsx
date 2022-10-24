@@ -3,6 +3,11 @@ import './App.css';
 import ConnectGameUI from "./UI/ConnectGameUI";
 import {Board} from "./Logic/ConnectGame";
 
+/**
+ * Setups the default board and renders the ConnectGameUI.
+ *
+ * @constructor
+ */
 function App() {
     const [board,setBoard] = useState<Board>();
 

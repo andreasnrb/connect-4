@@ -1,4 +1,6 @@
-
+/**
+ * Simple wrapper class to handle local storage of the game state.
+ */
 class GameStorage {
     addPlacement(placement:[number,number]) {
         let history = this.getHistory();
