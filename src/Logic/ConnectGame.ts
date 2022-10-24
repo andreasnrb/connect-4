@@ -2,7 +2,8 @@ enum GameEvent {
     Placement,
     Reversal,
     Won,
-    Finished
+    Finished,
+    Reset
 }
 
 class ConnectGame {
@@ -22,6 +23,7 @@ class ConnectGame {
         this.subscriptions[GameEvent.Reversal] = {};
         this.subscriptions[GameEvent.Won] = {};
         this.subscriptions[GameEvent.Finished] = {};
+        this.subscriptions[GameEvent.Reset] = {};
         this.board = board;
         this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
         this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
@@ -231,6 +233,17 @@ class ConnectGame {
 
     getHistory() {
         return this.history;
+    }
+
+    reset() {
+        this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
+            return Array(this.board.rows).fill(0);
+        })
+        this.history = [];
+        this.currentPlayer = 1;
+        this.completed = false;
+        this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
+        Object.values(this.subscriptions[GameEvent.Reset]).map((subscribedCallback) => subscribedCallback(this));
     }
 }
 

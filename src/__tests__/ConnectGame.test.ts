@@ -188,3 +188,13 @@ it( 'should regret latest move', () => {
     expect(board.regretLatestMove( regretFn )).toStrictEqual([1,1]);
     expect(regretFn).toHaveBeenLastCalledWith([1,1], board.getHistory(), board.getPlacements());
 })/**/
+
+it( 'should reset board state', () => {
+    let board = new ConnectGame( {rows:4, columns:4, connect: 3});
+    let player1:number = 1;
+    let player2:number = 2;
+    expect(board.placeToken( 1, player1)).toBeTruthy();
+    expect(board.placeToken( 1, player2)).toBeTruthy();
+    board.reset();
+    expect(board.getHistory().length).toBe(0);
+});
