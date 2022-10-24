@@ -10,15 +10,17 @@ interface BoardData {
 function Board( boardData:BoardData ) {
     const game = boardData.game;
     const [currentPlayer, setCurrentPlayer] = useState(game.getCurrentPlayer());
-    const [placements,setPlacements] = useState(game.getPlacements());
+    const [placements,] = useState(game.getPlacements());
     useEffect(() => {
-        game.subscribeToEvent(GameEvent.Placement, () => {
+        game.subscribeToEvent(GameEvent.Placement, 'board', () => {
             setCurrentPlayer(game.getCurrentPlayer())
         })
-        game.subscribeToEvent(GameEvent.Reversal, () => {
+        game.subscribeToEvent(GameEvent.Reversal, 'board', () => {
             setCurrentPlayer(game.getCurrentPlayer())
         })
         return () => {
+            game.unsubscribeFromEvent(GameEvent.Placement, 'board')
+            game.unsubscribeFromEvent(GameEvent.Reversal, 'board')
         }
     },[game])
     const columns = [...Array(game.getColumns()).keys() ].map((v) =>
