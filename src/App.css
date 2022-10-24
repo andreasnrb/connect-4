@@ -1,3 +1,7 @@
+body {
+    background-color: #282c34;
+    color: #e3e3e3;
+}
 .App {
   text-align: center;
 }
@@ -14,8 +18,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  min-height: 2vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -35,4 +38,69 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+button, input {
+    padding:10px 15px;
+    font-size: 1.5em;
+}
+
+.board-param {
+    width: 55px;
+    text-align: center;
+}
+
+.board-column,.board-row,.token,.empty-slot  {
+    width: 4vw;
+    height: 4vw;
+    min-width: 50px;
+    min-height: 50px;
+    max-width: 100px;
+    max-height: 100px;
+}
+.tokenColumn {
+    background-color: royalblue;
+    padding:5px 5px 5px 5px;
+}
+.token {
+
+}
+.board {
+    margin-left: auto;
+    margin-right: auto;
+    display: grid;
+    place-items: center;
+    width: max-content;
+    height: max-content;
+    padding:5px 20px 20px 20px;
+    cursor: pointer;
+}
+.token {
+    clip-path: circle(50%);
+}
+.empty-slot {
+    background-color: #e3e3e3;
+}
+.player1,.currentPlayer1 .column.token:hover {
+    background-color: #e53030;
+}
+
+.player2,.currentPlayer2 .column.token:hover {
+    background-color: #fafa42;
+}
+
+.placements {
+    display: flex;
+    width: max-content;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 10px;
+}
+
+.placements .empty-slot {
+    background-color: transparent;
+}
+
+.placements .empty-slot:hover {
+    cursor: pointer;
 }
