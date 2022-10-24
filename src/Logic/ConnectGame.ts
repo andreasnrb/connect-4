@@ -10,7 +10,7 @@ class ConnectGame {
     placements: any;
     free: Array<number>;
     history: Array<any> = [];
-    subscriptions: Array<Array<Function>> = [];
+    subscriptions: Array<{[k:string]:Function}> = [];
     currentPlayer:number = 1;
     completed:boolean=false;
     constructor( board:Board ) {
@@ -18,10 +18,10 @@ class ConnectGame {
         if ( ! Number.isInteger( board.rows ) ) throw new Error( 'Rows have to be an integer.')
         if ( ! Number.isInteger( board.connect ) ) throw new Error( 'Connect have to be an integer.')
         if ( board.connect > board.rows || board.connect > board.columns ) throw new Error( 'Connect has to be smaller than rows and columns-')
-        this.subscriptions[GameEvent.Placement] = [];
-        this.subscriptions[GameEvent.Reversal] = [];
-        this.subscriptions[GameEvent.Won] = [];
-        this.subscriptions[GameEvent.Finished] = [];
+        this.subscriptions[GameEvent.Placement] = {};
+        this.subscriptions[GameEvent.Reversal] = {};
+        this.subscriptions[GameEvent.Won] = {};
+        this.subscriptions[GameEvent.Finished] = {};
         this.board = board;
         this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
         this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
@@ -61,19 +61,19 @@ class ConnectGame {
         this.history.push([column, token]);
         this.free[ column - 1 ]++;
         this.currentPlayer= this.currentPlayer===1?2:1;
-        this.subscriptions[GameEvent.Placement].map((subscribedCallback) => subscribedCallback([column, token], this.placements));
+        Object.values(this.subscriptions[GameEvent.Placement]).map((subscribedCallback) => subscribedCallback([column, token], this.placements));
         if ( callback ) {
             callback([column, token], this.placements);
         }
         return true;
     }
 
-    subscribeToEvent(event:GameEvent, callback:Function ) {
-        this.subscriptions[event].push(callback);
+    subscribeToEvent(event:GameEvent, key:string, callback:Function ) {
+        this.subscriptions[event][key] = callback;
     }
 
-    unsubscribeFromEvent( event:GameEvent ) {
-        this.subscriptions[event].pop();
+    unsubscribeFromEvent( event:GameEvent, key:string ) {
+        delete this.subscriptions[event][key];
     }
 
     checkIfConnect() {
@@ -90,7 +90,7 @@ class ConnectGame {
         }
         if ( result ) this.completed = true;
         if ( result )
-            this.subscriptions[GameEvent.Won].map((subscribedCallback) => subscribedCallback(result));
+            Object.values(this.subscriptions[GameEvent.Won]).map((subscribedCallback) => subscribedCallback(result));
         return result ? result : false;
 
     }
@@ -222,7 +222,7 @@ class ConnectGame {
         this.placements[ column - 1 ][ this.free[ column - 1 ] ] = 0;
         this.free[column - 1]--;
         this.currentPlayer= player;
-        this.subscriptions[GameEvent.Reversal].map((subscribedCallback) => subscribedCallback([column, player], this.history, this.placements));
+        Object.values(this.subscriptions[GameEvent.Reversal]).map((subscribedCallback) => subscribedCallback([column, player], this.history, this.placements));
         if ( callback ) {
             callback([column, player], this.history, this.placements );
         }
