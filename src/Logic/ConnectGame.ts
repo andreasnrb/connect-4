@@ -14,7 +14,6 @@ class ConnectGame {
     currentPlayer:number = 1;
     completed:boolean=false;
     constructor( board:Board ) {
-        console.log("LOADED");
         if ( ! Number.isInteger( board.columns ) ) throw new Error( 'Columns have to be an integer.')
         if ( ! Number.isInteger( board.rows ) ) throw new Error( 'Rows have to be an integer.')
         if ( ! Number.isInteger( board.connect ) ) throw new Error( 'Connect have to be an integer.')
@@ -218,13 +217,16 @@ class ConnectGame {
     }
 
     regretLatestMove( callback?:Function ) {
-        let latest = this.history.pop();
+        if( this.history.length === 0 ) return [];
+        let [column, player] = this.history.pop();
+        this.placements[ column - 1 ][ this.free[ column - 1 ] ] = 0;
+        this.free[column - 1]--;
         this.currentPlayer= this.currentPlayer===1?2:1;
-        this.subscriptions[GameEvent.Reversal].map((subscribedCallback) => subscribedCallback(latest, this.history, this.placements));
+        this.subscriptions[GameEvent.Reversal].map((subscribedCallback) => subscribedCallback([column, player], this.history, this.placements));
         if ( callback ) {
-            callback(latest, this.history, this.placements );
+            callback([column, player], this.history, this.placements );
         }
-        return latest;
+        return [column, player];
     }
 
     getHistory() {

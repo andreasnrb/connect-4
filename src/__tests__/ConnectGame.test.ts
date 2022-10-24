@@ -174,6 +174,8 @@ it( 'should regret latest move', () => {
     expect(board.getHistory().length).toBe(0);
     expect(board.placeToken( 1, player2)).toBeTruthy();
     expect(board.getHistory().length).toBe(1);
+    expect(board.free[0]).toBe(1);
+    expect(board.getPlacements()[0][1]).toBe(0);
 })
 
 /**/it( 'should use callback', () => {
