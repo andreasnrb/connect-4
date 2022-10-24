@@ -25,7 +25,7 @@ class ConnectGame {
         this.board = board;
         this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
         this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
-            return Array(this.board.rows).map(() => 0);
+            return Array(this.board.rows).fill(0);
         })
     }
     getCurrentPlayer() {
@@ -60,8 +60,8 @@ class ConnectGame {
         this.placements[ column - 1 ][ this.free[ column - 1 ] ] = token;
         this.history.push([column, token]);
         this.free[ column - 1 ]++;
-        this.subscriptions[GameEvent.Placement].map((subscribedCallback) => subscribedCallback([column, token], this.placements));
         this.currentPlayer= this.currentPlayer===1?2:1;
+        this.subscriptions[GameEvent.Placement].map((subscribedCallback) => subscribedCallback([column, token], this.placements));
         if ( callback ) {
             callback([column, token], this.placements);
         }
@@ -221,7 +221,7 @@ class ConnectGame {
         let [column, player] = this.history.pop();
         this.placements[ column - 1 ][ this.free[ column - 1 ] ] = 0;
         this.free[column - 1]--;
-        this.currentPlayer= this.currentPlayer===1?2:1;
+        this.currentPlayer= player;
         this.subscriptions[GameEvent.Reversal].map((subscribedCallback) => subscribedCallback([column, player], this.history, this.placements));
         if ( callback ) {
             callback([column, player], this.history, this.placements );
