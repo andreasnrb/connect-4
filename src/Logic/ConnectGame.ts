@@ -1,19 +1,36 @@
+enum GameEvent {
+    Placement,
+    Reversal,
+    Won,
+    Finished
+}
 
 class ConnectGame {
     board: Board;
     placements: any;
     free: Array<number>;
     history: Array<any> = [];
+    subscriptions: Array<Array<Function>> = [];
+    currentPlayer:number = 1;
+    completed:boolean=false;
     constructor( board:Board ) {
+        console.log("LOADED");
         if ( ! Number.isInteger( board.columns ) ) throw new Error( 'Columns have to be an integer.')
         if ( ! Number.isInteger( board.rows ) ) throw new Error( 'Rows have to be an integer.')
         if ( ! Number.isInteger( board.connect ) ) throw new Error( 'Connect have to be an integer.')
         if ( board.connect > board.rows || board.connect > board.columns ) throw new Error( 'Connect has to be smaller than rows and columns-')
+        this.subscriptions[GameEvent.Placement] = [];
+        this.subscriptions[GameEvent.Reversal] = [];
+        this.subscriptions[GameEvent.Won] = [];
+        this.subscriptions[GameEvent.Finished] = [];
         this.board = board;
         this.free = Array.apply(null, Array(this.board.columns )).map( () => 0 )
         this.placements = Array.apply(null, Array(this.board.columns)).map(() => {
             return Array(this.board.rows).map(() => 0);
         })
+    }
+    getCurrentPlayer() {
+        return this.currentPlayer;
     }
 
     getColumns() {
@@ -37,16 +54,27 @@ class ConnectGame {
     }
 
     placeToken(column: number, token: number, callback?:Function ) {
+        if ( this.completed ) return false;
         if ( ! Number.isInteger( column ) ) throw new Error( 'Column have to be an integer.')
         if ( column < 1 || column > this.board.columns ) return false;
         if ( this.free[column - 1 ] === this.board.rows ) return false;
         this.placements[ column - 1 ][ this.free[ column - 1 ] ] = token;
+        this.history.push([column, token]);
+        this.free[ column - 1 ]++;
+        this.subscriptions[GameEvent.Placement].map((subscribedCallback) => subscribedCallback([column, token], this.placements));
+        this.currentPlayer= this.currentPlayer===1?2:1;
         if ( callback ) {
             callback([column, token], this.placements);
         }
-        this.history.push([column, token]);
-        this.free[ column - 1 ]++;
         return true;
+    }
+
+    subscribeToEvent(event:GameEvent, callback:Function ) {
+        this.subscriptions[event].push(callback);
+    }
+
+    unsubscribeFromEvent( event:GameEvent ) {
+        this.subscriptions[event].pop();
     }
 
     checkIfConnect() {
@@ -61,6 +89,9 @@ class ConnectGame {
         if ( ! result ) {
             result = this.checkDiagonalWinner(cols);
         }
+        if ( result ) this.completed = true;
+        if ( result )
+            this.subscriptions[GameEvent.Won].map((subscribedCallback) => subscribedCallback(result));
         return result ? result : false;
 
     }
@@ -129,7 +160,7 @@ class ConnectGame {
         let end:Coordinate;
         let startY:Coordinate;
         if ( cols.length<this.board.connect ) return false;
-        if ( Math.max(  ... cols ) < this.board.connect) return false;
+        if ( Math.max(  ...cols ) < this.board.connect) return false;
         for( let col=0; col<this.getColumns() && !found;col++) {
             for( let row=0;row<this.getRows() && !found;row++){
                 let player = 0;
@@ -188,6 +219,8 @@ class ConnectGame {
 
     regretLatestMove( callback?:Function ) {
         let latest = this.history.pop();
+        this.currentPlayer= this.currentPlayer===1?2:1;
+        this.subscriptions[GameEvent.Reversal].map((subscribedCallback) => subscribedCallback(latest, this.history, this.placements));
         if ( callback ) {
             callback(latest, this.history, this.placements );
         }
@@ -215,5 +248,5 @@ interface Board {
     connect: number
 }
 
-export {ConnectGame};
+export {ConnectGame, GameEvent};
 export type { Result, Board };
