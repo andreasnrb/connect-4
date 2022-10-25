@@ -36,18 +36,7 @@ function ConnectGameUI(props:BoardData) {
         confirmAlert( {
             title: "Confirm reset",
             message: "Are you sure you want to reset the game?",
-            buttons: [
-                {
-                    label: "Yes",
-                    onClick: () => {
-                        gameStorage.setHistory([]);
-                        game.reset();
-                    }
-                },
-                {
-                    label: "No",
-                }
-            ]
+            buttons: [ { label: "Yes", onClick: () => { game.reset(); } }, { label: "No",} ]
         })
     }
     useEffect(() => {
@@ -62,11 +51,17 @@ function ConnectGameUI(props:BoardData) {
             setCurrentPlayer(game.getCurrentPlayer())
             gameStorage.removeLatestPlacement();
         })
+        game.subscribeToEvent(GameEvent.Reset, 'uiGame', () => {
+            setWinner({winner:false, player: 0 })
+            setCurrentPlayer(1)
+            gameStorage.setHistory([]);
+        })
 
         return () => {
             game.unsubscribeFromEvent(GameEvent.Placement, 'uiGame')
             game.unsubscribeFromEvent(GameEvent.Won, 'uiGame')
             game.unsubscribeFromEvent(GameEvent.Reversal, 'uiGame')
+            game.unsubscribeFromEvent(GameEvent.Reset, 'uiGame')
         }
     },[game, gameStorage])
     return <>

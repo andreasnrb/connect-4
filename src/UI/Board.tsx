@@ -25,9 +25,13 @@ function Board( boardData:BoardData ) {
         game.subscribeToEvent(GameEvent.Reversal, 'board', () => {
             setCurrentPlayer(game.getCurrentPlayer())
         })
+        game.subscribeToEvent(GameEvent.Reset, 'board', () => {
+            setCurrentPlayer(game.getCurrentPlayer())
+        })
         return () => {
             game.unsubscribeFromEvent(GameEvent.Placement, 'board')
             game.unsubscribeFromEvent(GameEvent.Reversal, 'board')
+            game.unsubscribeFromEvent(GameEvent.Reset, 'board')
         }
     },[game])
     const columns = [...Array(game.getColumns()).keys() ].map((v) =>
