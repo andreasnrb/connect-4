@@ -3,6 +3,8 @@
 Demo project for working with React. Supports "unlimited" size boards and connects.
 Default size is 5 by 5 and connect 4 tokens.
 
+![Screenshot](/screenshot.png "Screenshot")
+
 ## Available Scripts
 
 In the project directory, you can run:
