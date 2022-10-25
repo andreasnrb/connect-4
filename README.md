@@ -5,6 +5,20 @@ Default size is 5 by 5 and connect 4 tokens.
 
 ![Screenshot](/screenshot.png "Screenshot")
 
+## Structure
+
+* **App.tsx** Renders the Game UI and sets the initial board config.
+* **App.css** The styling of the game.
+* Logic
+  * **ConnectGame.js:** handles the board state and actions
+  * **GameStorage.js:** handles storing minimum data required for board state. Stores data in localStorage.
+* UI
+  * **ConnectGameUI.tsx:** is the main component that handles the board. Sets starting state and provides placement function.
+  * **Button.tsx:** A simple button for clicking.
+  * **Board.tsx:** Creates the board you play on. Adds the board columns. (Also has UI state regarding current player, can be moved to ConnectGameUI)
+  * **Column.tsx** A column of tokens. Has its own state and click action.
+  * **Token.tsx** Tokens are is a representation of the 3 states a placement in a column can have. Empty, Player 1 or Player 2.
+
 ## Available Scripts
 
 In the project directory, you can run:

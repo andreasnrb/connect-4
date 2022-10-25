@@ -11,6 +11,8 @@ interface BoardData {
  * Board renders the complete board and handles the current player display state.
  * CSS class is set based on current player so that the UI adapts.
  *
+ * TODO: Move the current player state to ConnectGameUI. Not required in board.
+ *
  * @param boardData
  * @constructor
  */
